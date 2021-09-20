@@ -7,9 +7,10 @@ typedef struct termios term_t;
 typedef struct winsize win_t;
 
 typedef struct frame {
-    char** buf;
+    char* buf;
     ushort width;
     ushort height;
+    unsigned size;
 } frame;
 
 typedef struct cell {
@@ -19,6 +20,8 @@ typedef struct cell {
 
 static term_t* tty = NULL;
 static win_t* win = NULL;
+
+int time_passed(long seconds, long miliseconds);
 
 void init();
 void fini();

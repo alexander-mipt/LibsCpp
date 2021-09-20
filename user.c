@@ -9,19 +9,17 @@ int main() {
     cls();
     frame f;
     init_frame(&f, xmax(), ymax());
-    for (int i = 0 ; i < 1000; ++i) {
-        //sleep(1);
-        frame_set(&f, set_point(i,i), 'o');
-        frame_draw(&f);
-        frame_flush(&f);
+    long i = -1;
+    while (1) {
+        if (time_passed(0, 10)) {
+            i++;
+            cls();
+            frame_set(&f, set_point(i,i % ymax()), 'o');
+            frame_draw(&f);
+            // frame_flush(&f);
+        }
     }
-    // draw(0, 0, 'x');
-    // draw(xmax(), ymax(), 'y');
-    // setxy(0, 0, 'z');
-    // setxy(xmax(), ymax(), 'f');
+    
     fini_frame(&f);
-
-    while(1);
-
     fini();
 }
