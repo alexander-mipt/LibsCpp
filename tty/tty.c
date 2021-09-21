@@ -71,7 +71,7 @@ void fini_tty() {
     signal(SIGTERM, SIG_DFL);
     signal(SIGWINCH, SIG_DFL);
     setvbuf(stdout, NULL, _IOLBF, 0);
-    cls();
+    //cls();
 }
 
 void init_win() {
@@ -105,12 +105,12 @@ void setxy(int x, int y, char c) {
     printf("\e[%d;%dH%c", win->ws_row - y, x, c);
 }
 
-unsigned short xmax() {
+pixl_t x_end() {
     assert(win != NULL);
     return win->ws_col;
 }
 
-unsigned short ymax() {
+pixl_t y_end() {
     assert(win != NULL);
     return win->ws_row;
 }
@@ -135,16 +135,16 @@ void vline(int x, int y, int len) {
     }
 }
 
-unsigned frame_pos(frame* frm, ushort x, ushort y) {
+ulong_t xy_to_offset(frame* frm, pixl_t x, pixl_t y) {
     assert(x < frm->width);
     assert(y < frm->height);
 
     return y * frm->width + y + x;
 }
 
-void init_frame(frame* frm, const ushort width, const ushort height) {
+void init_frame(frame* frm, const pixl_t width, const pixl_t height) {
     assert(frm != NULL);
-    unsigned size = (width + 1) * height;
+    ulong_t size = (width + 1) * height;
     frm->buf = (char*) calloc(size, sizeof(char));
     assert(frm->buf != NULL);
 
@@ -153,7 +153,7 @@ void init_frame(frame* frm, const ushort width, const ushort height) {
     frm->size = size;
 
     for (unsigned r = 0; r < size; ++r)
-            frm->buf[r] = '.';
+            frm->buf[r] = EMPTY;
 
     for (long r = 1; r < height; ++r) {
         frm->buf[r * width + r - 1] = '\n';
@@ -168,28 +168,25 @@ void fini_frame(frame* frm) {
 
 int frame_set(frame* frm, cell point, char val) {
     assert(frm != NULL && frm->buf != NULL);
-    
-    point.x %= frm->width;
-    point.y %= frm->height;
-    frm->buf[frame_pos(frm, point.x, point.y)] = val;
-
+    frm->buf[xy_to_offset(frm, point.x, point.y)] = val;
     return 0;
 }
 
 int frame_unset(frame* frm, cell point) {
-    return frame_set(frm, point, '.');
+    assert(frm != NULL);
+    return frame_set(frm, point, EMPTY);
 }
 
 char frame_get(frame* frm, cell point) {
     assert(frm != NULL);
-    return frm->buf[frame_pos(frm, point.x, point.y)];
+    return frm->buf[xy_to_offset(frm, point.x, point.y)];
 }
 
 void frame_flush(frame* frm) {
     assert(frm != NULL && frm->buf != NULL);
-    for (ushort r = 0; r < frm->width; ++r) {
-        for (ushort c = 0; c < frm->height; ++c) {
-            frm->buf[frame_pos(frm, r, c)] = '.';
+    for (pixl_t r = 0; r < frm->width; ++r) {
+        for (pixl_t c = 0; c < frm->height; ++c) {
+            frm->buf[xy_to_offset(frm, r, c)] = EMPTY;
         }
     }
 }
@@ -199,7 +196,23 @@ void frame_draw(frame* frm) {
     write(STDOUT_FILENO, frm->buf, frm->size);
 }
 
-cell set_point(const ushort x, const ushort y) {
+cell set_point(frame* frm, long x, long y) {
+    assert(frm != NULL);
+
+    if (x < 0) {
+        x = frm->width - (-x % frm->width) - 1;
+    }
+    else {
+        x %= frm->width;
+    }
+
+    if (y < 0) {
+        y = frm->height - (-y % frm->height) - 1;
+    }
+    else {
+        y %= frm->height;
+    }
+
     cell p;
     p.x = x;
     p.y = y;
