@@ -2,7 +2,7 @@
 
 #include <stdio.h>
 #include "sys/types.h"
-#define EMPTY '*'
+#define EMPTY ' '
 
 typedef struct termios term_t;
 typedef struct winsize win_t;

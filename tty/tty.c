@@ -198,24 +198,26 @@ void frame_draw(frame* frm) {
 
 cell set_point(frame* frm, long x, long y) {
     assert(frm != NULL);
+    cell p = {0,0};
 
     if (x < 0) {
-        x = frm->width - (-x % frm->width) - 1;
+        p.x = -x % frm->width;
+        if (p.x != 0)
+            p.x = frm->width - p.x;
     }
-    else {
-        x %= frm->width;
-    }
+    else
+        p.x = x % frm->width;
+
 
     if (y < 0) {
-        y = frm->height - (-y % frm->height) - 1;
+        p.y = -y % frm->height;
+        if (p.y != 0)
+            p.y = frm->height - p.y;
     }
-    else {
-        y %= frm->height;
-    }
+    else
+        p.y = y % frm->height;
 
-    cell p;
-    p.x = x;
-    p.y = y;
+    
     return p;
 }
 
